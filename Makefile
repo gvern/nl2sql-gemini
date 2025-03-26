@@ -12,6 +12,9 @@ evaluate:
 
 run:
 	uvicorn src.inference.serve:app --reload
-	
+
 streamlit:
 	streamlit run scripts/streamlit_app.py
+
+test:
+	pytest tests/

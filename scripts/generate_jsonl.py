@@ -5,48 +5,24 @@ import pandas as pd
 from typing import List, Dict, Any
 from google.cloud import bigquery, storage
 from langchain_core.globals import set_verbose, set_debug
+from config.settings import (
+    PROJECT_ID,
+    DATASET_ID,
+    BQ_LOGS_TABLE,
+    GCS_BUCKET_URI,
+    FINETUNE_PATH,
+    TRAINING_DATA_URI,
+    VALIDATION_DATA_URI,
+    FIELDS_TO_IGNORE,
+    FIELDS_TO_ENHANCE,
+    SYSTEM_INSTRUCTION
+)
+
 
 # Désactive logs LangChain
 set_verbose(False)
 set_debug(False)
 
-# === Configuration ===
-project_id = "avisia-self-service-analytics"
-dataset_id = "reine_des_maracas"
-bq_logs_table_name = "avisia-self-service-analytics.working.logs"
-bucket_id = "self-service-analytics-bucket"
-gcs_bucket_uri = "gs://self-service-analytics-bucket/data/"
-location = "europe-west1"
-output_jsonl_path = "Finetuning_dataset/finetuning_data.jsonl"
-
-training_data_uri = gcs_bucket_uri + output_jsonl_path
-validation_data_uri = gcs_bucket_uri + "Finetuning_dataset/validation_dataset.jsonl"
-
-fields_to_ignore = ["_dlt_id", "_dlt_load_id"]
-
-fields_to_enhance = {
-    "magasin": ["VILLE", "REGIONS", "CENTRE_VILLE"],
-    "complement_individu": ["SOUSSEG", "SEGACT"],
-    "typo_produit": ["LIGNE", "FAMILLE"],
-}
-
-system_instruction = (
-    "Tu es un assistant de requête SQL spécialisé dans la base de données de l'entreprise Reine des Maracas. "
-    "Ton rôle est de traduire des questions en langage naturel en requêtes SQL valides pour BigQuery. "
-    "Génère des requêtes SQL correctes, efficaces et sécurisées.\n"
-    "Voici le schéma de la base de données:\n\n"
-    "Instructions:\n"
-    "- Si une question ne peut pas être répondue, réponds UNIQUEMENT par 'INCOMPLETE_SCHEMA'.\n"
-    "- Pour les questions 'Combien', utilise COUNT(*) AS total.\n"
-    "- Fonctions BigQuery uniquement.\n"
-    "- Pas de commentaires SQL (--).\n"
-    "- Sois précis et concis.\n"
-    "- Requête la plus simple et efficace.\n"
-    "- N'invente pas de noms de tables/colonnes.\n"
-    "- Si la question est ambiguë, demande des clarifications.\n"
-    "- IMPORTANT: La colonne DATE_TICKET est de type STRING (JJ/MM/AAAA). Utilise PARSE_DATE('%d/%m/%Y', DATE_TICKET).\n"
-    "- **Toutes les requêtes DOIVENT prendre en compte que les dates de DATE_TICKET sont UNIQUEMENT comprises entre le 2018-09-12 et le 2023-12-31.**"
-)
 
 # === Fonctions ===
 

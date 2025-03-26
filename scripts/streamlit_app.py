@@ -53,7 +53,9 @@ if st.button("🚀 Générer et Exécuter la requête SQL"):
         with st.spinner("💡 Génération de la requête SQL en cours..."):
             sql = predict_sql(user_input)
 
-        if not sanitize_sql_output(sql):
+            is_safe, reason = sanitize_sql_output(sql)
+        if not is_safe:
+            st.error(reason)  # ou log le reason dans FastAPI
             st.error(f"{sql}")
             st.error("⚠️ La requête générée contient des mots-clés interdits (DROP, DELETE, etc).")
         elif sql == "INCOMPLETE_SCHEMA":

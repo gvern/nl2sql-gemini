@@ -1,22 +1,24 @@
 import time
 import vertexai
 from vertexai.tuning import sft
+from config.settings import (
+    PROJECT_ID,
+    VERTEX_LOCATION,
+    TRAINING_DATA_URI,
+    VALIDATION_DATA_URI,
+    SOURCE_MODEL
+)
 
-# === Configuration ===
-project_id = "avisia-self-service-analytics"
-location = "europe-west1"
-training_data_uri = "gs://self-service-analytics-bucket/data/Finetuning_dataset/finetuning_data.jsonl"
-validation_data_uri = "gs://self-service-analytics-bucket/data/Finetuning_dataset/validation_dataset.jsonl"
-source_model = "gemini-2.0-flash-001"
+
 
 # === Fine-tuning ===
 def finetune_gemini_model():
-    vertexai.init(project=project_id, location=location)
+    vertexai.init(project=PROJECT_ID, location=VERTEX_LOCATION)
     try:
         job = sft.train(
-            source_model=source_model,
-            train_dataset=training_data_uri,
-            validation_dataset=validation_data_uri
+            source_model=SOURCE_MODEL,
+            train_dataset=TRAINING_DATA_URI,
+            validation_dataset=VALIDATION_DATA_URI
         )
         while not job.has_ended:
             print(f"⏳ Tuning job state: {job.state}")
