@@ -17,7 +17,9 @@ def get_prediction(payload: QueryRequest):
 
     sql = predict_sql(payload.question)
 
-    if not sanitize_sql_output(sql):
-        raise HTTPException(status_code=403, detail="Sortie SQL non autorisée.")
+    is_safe, reason = sanitize_sql_output(sql)
+    if not is_safe:
+        raise HTTPException(status_code=403, detail=f"Sortie SQL non autorisée : {reason}")
+
 
     return {"sql": sql}

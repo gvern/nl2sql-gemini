@@ -8,7 +8,7 @@ deploy:
 	python scripts/deploy_model.py
 
 evaluate:
-	python scripts/evaluate_models.py
+	PYTHONPATH=. python scripts/evaluate_models.py
 
 run:
 	uvicorn src.inference.serve:app --reload
@@ -17,4 +17,4 @@ streamlit:
 	streamlit run scripts/streamlit_app.py
 
 test:
-	pytest tests/
+	PYTHONPATH=. pytest tests/

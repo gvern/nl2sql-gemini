@@ -11,9 +11,10 @@ def test_inference():
 
 def test_sanitization_true_string():
     from src.security.safety_checks import sanitize_sql_output
-    assert sanitize_sql_output("True") == (False, "La requête ne commence pas par SELECT")
+    assert sanitize_sql_output("True") == (False, "Sortie booléenne invalide")
 
 def test_sanitization_valid_sql():
     from src.security.safety_checks import sanitize_sql_output
     sql = "SELECT * FROM my_table"
-    assert sanitize_sql_output(sql) == (True, None)
+    assert sanitize_sql_output(sql) == (True, "OK")
+
