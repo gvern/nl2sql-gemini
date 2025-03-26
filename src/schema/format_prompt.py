@@ -1,12 +1,5 @@
-from extract_schema import extract_formatted_schema_for_prompt
-import os
-# ------------------------
-# Prompt commun (base + fine-tuned)
-# ------------------------
-
-PROJECT_ID = os.getenv("") # Remplacez par votre ID de projet
-DATASET_ID = os.getenv("") # Remplacez par votre ID de dataset
-
+from src.schema.extract_schema import extract_formatted_schema_for_prompt
+from config.settings import PROJECT_ID, DATASET_ID
 
 formatted_schema = extract_formatted_schema_for_prompt(PROJECT_ID, DATASET_ID)
 

@@ -4,7 +4,7 @@ from google import genai
 from google.genai import types
 from config.settings import PROJECT_NUMBER, ENDPOINT_ID, VERTEX_LOCATION
 from src.schema.format_prompt import FT_PROMPT_PREFIX
-from src.security.safety_checks import clean_sql
+from src.security.safety_checks import sanitize_sql_output
 
 def predict_sql(question: str) -> str:
     """
@@ -41,7 +41,7 @@ def predict_sql(question: str) -> str:
         stream = client.models.generate_content_stream(model=endpoint, contents=content, config=config)
         response = "".join(chunk.text for chunk in stream if chunk.text)
 
-        return clean_sql(response) or "INCOMPLETE_SCHEMA"
+        return sanitize_sql_output(response) or "INCOMPLETE_SCHEMA"
     
     except Exception as e:
         print(f"❌ Erreur lors de la prédiction : {e}")

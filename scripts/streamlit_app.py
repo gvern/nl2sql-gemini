@@ -1,10 +1,15 @@
 # scripts/streamlit_app.py
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import streamlit as st
 from src.inference.predict import predict_sql
 from src.security.safety_checks import validate_input, sanitize_sql_output
 from google.cloud import bigquery
 from config.settings import PROJECT_ID, BQ_LOCATION
+
 
 st.set_page_config(page_title="💬 NL-to-SQL avec Gemini", layout="centered")
 

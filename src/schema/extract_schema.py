@@ -1,5 +1,5 @@
 from google.cloud import bigquery
-from src.config import PROJECT_ID, DATASET_ID
+from config.settings import PROJECT_ID, DATASET_ID
 
 bq_client = bigquery.Client(project=PROJECT_ID)
 
