@@ -91,16 +91,16 @@ def get_logs_dataframe(bq_logs_table_name: str) -> pd.DataFrame:
     return client.query(query).result().to_dataframe()
 
 def create_finetuning_jsonl():
-    schemas = get_table_schemas(project_id, dataset_id, fields_to_ignore)
-    enhanced = enhance_schema_with_values(project_id, dataset_id, schemas, fields_to_enhance)
+    schemas = get_table_schemas(PROJECT_ID, DATASET_ID, FIELDS_TO_IGNORE)
+    enhanced = enhance_schema_with_values(PROJECT_ID, DATASET_ID, schemas, FIELDS_TO_ENHANCE)
     schema_str = format_schema_for_prompt(enhanced)
-    logs_df = get_logs_dataframe(bq_logs_table_name)
+    logs_df = get_logs_dataframe(BQ_LOGS_TABLE)
 
-    os.makedirs(os.path.dirname(output_jsonl_path), exist_ok=True)
-    with open(output_jsonl_path, "w", encoding="utf-8") as f:
+    os.makedirs(os.path.dirname(FINETUNE_PATH), exist_ok=True)
+    with open(FINETUNE_PATH, "w", encoding="utf-8") as f:
         for _, row in logs_df.iterrows():
             question, query = row["original_question"], row["query"]
-            instruction = f"{system_instruction.strip()}\n\nSchéma de la base de données :\n{schema_str}"
+            instruction = f"{SYSTEM_INSTRUCTION.strip()}\n\nSchéma de la base de données :\n{schema_str}"
             example = {
                 "systemInstruction": {
                     "role": "user",
@@ -113,16 +113,16 @@ def create_finetuning_jsonl():
             }
             json.dump(example, f, ensure_ascii=False)
             f.write("\n")
-    print(f"✅ JSONL généré : {output_jsonl_path}")
+    print(f"✅ JSONL généré : {FINETUNE_PATH}")
 
-    if gcs_bucket_uri:
-        bucket_name = gcs_bucket_uri.split("//")[1].split("/")[0]
-        rel_path = output_jsonl_path if not gcs_bucket_uri.endswith("/") else output_jsonl_path[len("Finetuning_dataset/"):]
-        blob_path = f"{gcs_bucket_uri.split(bucket_name+'/')[1]}{rel_path}"
+    if GCS_BUCKET_URI:
+        bucket_name = GCS_BUCKET_URI.split("//")[1].split("/")[0]
+        rel_path = FINETUNE_PATH if not GCS_BUCKET_URI.endswith("/") else FINETUNE_PATH[len("Finetuning_dataset/"):]
+        blob_path = f"{GCS_BUCKET_URI.split(bucket_name+'/')[1]}{rel_path}"
         storage_client = storage.Client()
         bucket = storage_client.bucket(bucket_name)
         blob = bucket.blob(blob_path)
-        blob.upload_from_filename(output_jsonl_path)
+        blob.upload_from_filename(FINETUNE_PATH)
         print(f"✅ Fichier uploadé vers GCS : gs://{bucket_name}/{blob_path}")
 
 # === Lancement ===
