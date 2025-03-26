@@ -1,0 +1,6 @@
+PROJECT_ID = "avisia-self-service-analytics"
+PROJECT_NUMBER = "491780955535"
+DATASET_ID = "reine_des_maracas"
+VERTEX_LOCATION = "europe-west1"
+BQ_LOCATION = "EU"
+ENDPOINT_ID = "4130025158670811136"

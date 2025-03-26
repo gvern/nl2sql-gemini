@@ -1,0 +1,5 @@
+[tool.poetry]
+name = "nl2sql-gemini"
+version = "0.1.0"
+description = "Natural language to SQL powered by Gemini and Vertex AI"
+authors = ["Gustave Vernay gvernay@avisia.fr"]
