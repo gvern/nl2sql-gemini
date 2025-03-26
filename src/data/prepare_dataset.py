@@ -3,7 +3,7 @@
 import pandas as pd
 import json
 from src.schema.extract_schema import extract_formatted_schema_for_prompt
-from src.config import PROJECT_ID, DATASET_ID
+from config.settings import PROJECT_ID, DATASET_ID
 from google.cloud import bigquery
 
 def prepare_jsonl_dataset(output_path):

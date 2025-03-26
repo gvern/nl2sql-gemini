@@ -54,6 +54,7 @@ if st.button("🚀 Générer et Exécuter la requête SQL"):
             sql = predict_sql(user_input)
 
         if not sanitize_sql_output(sql):
+            st.error(f"{sql}")
             st.error("⚠️ La requête générée contient des mots-clés interdits (DROP, DELETE, etc).")
         elif sql == "INCOMPLETE_SCHEMA":
             st.warning("🤖 Le modèle ne peut pas répondre : schéma incomplet ou question trop vague.")

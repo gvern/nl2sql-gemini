@@ -38,11 +38,26 @@ def predict_sql(question: str) -> str:
             ]
         )
 
+        # Génération en streaming
         stream = client.models.generate_content_stream(model=endpoint, contents=content, config=config)
-        response = "".join(chunk.text for chunk in stream if chunk.text)
+        response = "".join(chunk.text for chunk in stream if chunk.text).strip()
 
-        return sanitize_sql_output(response) or "INCOMPLETE_SCHEMA"
-    
+        # Vérification stricte du contenu généré
+        if not response or not isinstance(response, str):
+            print("⚠️ Réponse vide ou invalide.")
+            return "INCOMPLETE_SCHEMA"
+
+        # Nettoyage basique
+        cleaned_sql = response.strip()
+
+        # Sécurité : vérifie la validité de la requête générée
+        is_safe, reason = sanitize_sql_output(cleaned_sql)
+        if not is_safe:
+            print(f"🚫 Requête refusée : {reason}")
+            return "INCOMPLETE_SCHEMA"
+
+        return cleaned_sql
+
     except Exception as e:
         print(f"❌ Erreur lors de la prédiction : {e}")
         return "INCOMPLETE_SCHEMA"
