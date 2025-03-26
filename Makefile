@@ -1,11 +1,14 @@
 prepare:
-	python scripts/prepare_data.py
+	python scripts/generate_jsonl.py
 
 train:
-	python scripts/train_model.py
+	python src/finetune/launch_finetune.py
+
+deploy:
+	python scripts/deploy_model.py
 
 evaluate:
-	python scripts/evaluate_model.py
+	python scripts/evaluate_models.py
 
 run:
-	python scripts/app.py
+	uvicorn src.inference.serve:app --reload
