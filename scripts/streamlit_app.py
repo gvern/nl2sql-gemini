@@ -5,6 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import streamlit as st
 from src.inference.predict import predict_sql
 from src.security.safety_checks import validate_input, sanitize_sql_output
+from src.security.scope_filter import classify_scope
 from google.cloud import bigquery
 from config.settings import PROJECT_ID, BQ_LOCATION
 
@@ -49,6 +50,10 @@ user_input = st.text_input("📥 Votre question :", placeholder="Exemple : Quel 
 if st.button("🚀 Générer et Exécuter la requête SQL"):
     if not validate_input(user_input):
         st.error("❌ Entrée invalide. Veuillez formuler une question plus complète.")
+    if classify_scope(user_input) == "out_of_scope":
+        st.warning("🚫 Question hors-scope détectée.")
+        st.stop()
+
     else:
         with st.spinner("💡 Génération de la requête SQL en cours..."):
             sql = predict_sql(user_input)

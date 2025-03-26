@@ -20,7 +20,7 @@ def sanitize_sql_output(sql):
     Returns:
         (bool, str): Tuple indiquant si la requête est sûre, et pourquoi sinon.
     """
-    sql = sql.strip().strip('"').strip("'")  # Ajoute ça pour retirer les quotes
+    sql = sql.strip().strip('"').strip("'")  
 
     if not isinstance(sql, str):
         return False, "Sortie non textuelle"

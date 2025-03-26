@@ -18,3 +18,6 @@ streamlit:
 
 test:
 	PYTHONPATH=. pytest tests/
+robust-eval:
+	GOOGLE_CLOUD_PROJECT=avisia-self-service-analytics PYTHONPATH=. python -m src.evaluation.robust_eval
+

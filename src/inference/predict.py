@@ -6,6 +6,8 @@ from google.genai import types
 from config.settings import PROJECT_NUMBER, ENDPOINT_ID, VERTEX_LOCATION
 from src.schema.format_prompt import FT_PROMPT_PREFIX
 from src.security.safety_checks import sanitize_sql_output
+from src.security.scope_filter import classify_scope
+
 
 # Logger
 logger = logging.getLogger(__name__)
@@ -22,6 +24,11 @@ def predict_sql(question: str, use_ft_model: bool = True) -> str:
     Returns:
         str: Requête SQL générée ou 'INCOMPLETE_SCHEMA'
     """
+    # 🔐 Refus immédiat des questions hors-scope
+    if classify_scope(question) == "out_of_scope":
+        logger.warning(f"🚫 Question hors-scope détectée : {question}")
+        return "INCOMPLETE_SCHEMA"
+
     try:
         client = genai.Client(vertexai=True, project=PROJECT_NUMBER, location=VERTEX_LOCATION)
 

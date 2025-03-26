@@ -24,3 +24,10 @@ def test_boolean_output():
     assert sanitize_sql_output("True") == (False, "Sortie booléenne invalide")
 
 
+def test_classify_scope_in_scope():
+    from src.security.scope_filter import classify_scope
+    assert classify_scope("Quel est le chiffre d'affaires ?") == "in_scope"
+
+def test_classify_scope_out_scope():
+    from src.security.scope_filter import classify_scope
+    assert classify_scope("Quelle est la capitale de la France ?") == "out_of_scope"
