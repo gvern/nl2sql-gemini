@@ -17,6 +17,8 @@ def sanitize_sql_output(sql):
     Returns:
         (bool, str): Tuple indiquant si la requête est sûre, et pourquoi sinon.
     """
+    sql = sql.strip().strip('"').strip("'")  # Ajoute ça pour retirer les quotes
+
     if not isinstance(sql, str):
         return False, "Sortie non textuelle"
     
@@ -28,8 +30,9 @@ def sanitize_sql_output(sql):
     if sql.lower() in ["true", "false"]:
         return False, "Sortie booléenne invalide"
 
-    if not sql.lower().startswith("select"):
-        return False, "La requête ne commence pas par SELECT"
+    if not (sql.lower().startswith("select") or sql.lower().startswith("with")):
+        return False, "La requête ne commence pas par SELECT ou WITH"
+    
 
     for keyword in SQL_DANGEROUS_KEYWORDS:
         if re.search(rf'\b{keyword}\b', sql, re.IGNORECASE):
