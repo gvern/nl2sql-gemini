@@ -12,8 +12,7 @@ from config.settings import (
     GCS_BUCKET_URI,
     FINETUNE_PATH,
     FIELDS_TO_IGNORE,
-    FIELDS_TO_ENHANCE,
-    SYSTEM_INSTRUCTION
+    FIELDS_TO_ENHANCE
 )
 
 # === Désactive logs LangChain ===
@@ -171,6 +170,7 @@ def create_finetuning_jsonl(top_n: int = None, filter_complexity: str = None, ap
 # === Script d’exécution CLI ===
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--output", type=str, default=FINETUNE_PATH)
     parser.add_argument("--top_n", type=int, default=None, help="Nombre d'exemples complexes à inclure")
     parser.add_argument("--filter_complexity", type=str, choices=["simple", "medium", "advanced"], help="Filtrer par complexité SQL")
     parser.add_argument("--append", action="store_true", help="Ajouter les exemples sans écraser le fichier existant")

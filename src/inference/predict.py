@@ -7,6 +7,7 @@ from config.settings import PROJECT_NUMBER, ENDPOINT_ID, VERTEX_LOCATION
 from src.security.safety_checks import sanitize_sql_output
 from src.security.scope_filter import classify_scope
 from src.prompts.utils import get_prompt
+from src.logging_config import logger
 
 
 FT_PROMPT_PREFIX = get_prompt("v2")
@@ -71,7 +72,9 @@ def predict_sql(question: str, use_ft_model: bool = True) -> str:
         if not response or not isinstance(response, str):
             logger.warning("⚠️ Réponse vide ou invalide")
             return "INCOMPLETE_SCHEMA"
-
+        if response.lower().strip() == "incomplete_schema":
+                        logger.info("ℹ️ Modèle a détecté une question ambiguë ou hors schéma.")
+                        return "INCOMPLETE_SCHEMA"
         cleaned_sql = response.strip()
         is_safe, reason = sanitize_sql_output(cleaned_sql)
 
@@ -80,10 +83,11 @@ def predict_sql(question: str, use_ft_model: bool = True) -> str:
             return "INCOMPLETE_SCHEMA"
 
         return cleaned_sql
-
+        
     except Exception as e:
         logger.error(f"❌ Erreur lors de la prédiction : {e}")
         return "INCOMPLETE_SCHEMA"
+    
 
 
 def generate_base_sql(question: str) -> str:
