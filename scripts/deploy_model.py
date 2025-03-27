@@ -1,5 +1,7 @@
 from google.cloud import aiplatform
 from config.settings import PROJECT_ID, VERTEX_LOCATION
+from src.logging_config import logger
+
 
 def deploy_model(model_name: str, endpoint_display_name: str):
     """
@@ -22,6 +24,7 @@ def deploy_model(model_name: str, endpoint_display_name: str):
     print(f"✅ Modèle déployé sur l'endpoint : {endpoint.resource_name}")
 
 if __name__ == "__main__":
+    
     deploy_model(
         model_name="projects/491780955535/locations/europe-west1/models/YOUR_FINE_TUNED_MODEL_ID",
         endpoint_display_name="nl2sql-ft-endpoint"

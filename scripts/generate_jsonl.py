@@ -105,7 +105,7 @@ def score_sql_complexity(sql: str) -> int:
     score += len(set(sql_lower.split())) / 50
     return int(score)
 
-def create_finetuning_jsonl(top_n: int = None, filter_complexity: str = None, append: bool = False):
+def create_finetuning_jsonl(top_n: int = None, filter_complexity: str = None, append: bool = False, output_path=FINETUNE_PATH):
     schemas = get_table_schemas(PROJECT_ID, DATASET_ID, FIELDS_TO_IGNORE)
     enhanced = enhance_schema_with_values(PROJECT_ID, DATASET_ID, schemas, FIELDS_TO_ENHANCE)
     schema_str = format_schema_for_prompt(enhanced)
@@ -132,12 +132,12 @@ def create_finetuning_jsonl(top_n: int = None, filter_complexity: str = None, ap
     os.makedirs(os.path.dirname(FINETUNE_PATH), exist_ok=True)
 
     existing = []
-    if append and os.path.exists(args.output):
-        with open(args.output, "r", encoding="utf-8") as f:
+    if append and os.path.exists(output_path):
+        with open(output_path, "r", encoding="utf-8") as f:
             existing = f.readlines()
         print(f"➕ Mode append : {len(existing)} exemples existants chargés")
 
-    with open(args.output, "w", encoding="utf-8") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         for line in existing:
             f.write(line)
         for _, row in logs_df.iterrows():
@@ -180,5 +180,7 @@ if __name__ == "__main__":
     create_finetuning_jsonl(
         top_n=args.top_n,
         filter_complexity=args.filter_complexity,
-        append=args.append
+        append=args.append,
+        output_path=args.output
     )
+
