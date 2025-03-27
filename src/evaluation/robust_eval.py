@@ -2,7 +2,7 @@ import pandas as pd
 from tqdm import tqdm
 from src.inference.predict import generate_base_sql, generate_ft_sql
 from src.security.safety_checks import execute_sql, sanitize_sql_output
-from src.evaluation.plots import plot_results, plot_deltas
+from src.evaluation.plots import plot_results, plot_deltas, plot_scores_by_scope
 from config.settings import PROJECT_ID, VERTEX_LOCATION
 from google.cloud import bigquery
 from vertexai import init as vertexai_init
@@ -21,12 +21,21 @@ model_judge = GenerativeModel("gemini-pro")
 
 def classify_scope(question: str) -> str:
     """Détermine si une question est en lien avec la base de données métier ou hors-scope."""
-    prompt = (
-        "Cette question est-elle liée à une base de données métier sur la vente, les clients, "
-        "les produits ou les tickets ?\n"
-        "Réponds uniquement par \"in_scope\" ou \"out_of_scope\".\n\n"
-        f"Question : {question}"
-    )
+    prompt = f"""
+    Tu dois dire si la question est liée à une base métier sur les ventes, clients, produits, tickets.
+
+    Réponds uniquement par "in_scope" ou "out_of_scope".
+
+    Exemples :
+    Q: Quel est le chiffre d'affaires total ? → in_scope
+    Q: Combien de tickets ont été émis en 2023 ? → in_scope
+    Q: Quelle est la capitale de la France ? → out_of_scope
+    Q: Que vaut π au carré ? → out_of_scope
+    Q: Combien de clients fidèles en région PACA ? → in_scope
+
+    Question : {question}
+    """
+
     try:
         response = model_judge.generate_content(
             [Content(role="user", parts=[Part.from_text(prompt)])],
@@ -118,6 +127,7 @@ def robust_evaluate():
         base_accuracy=in_scope["base_semantic"].mean() / 2 * 100,
         ft_accuracy=in_scope["ft_semantic"].mean() / 2 * 100,
     )
+    plot_scores_by_scope(df_result)
 
 
 if __name__ == "__main__":
