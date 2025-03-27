@@ -15,11 +15,20 @@ def classify_scope(question: str) -> str:
     Returns: "in_scope" ou "out_of_scope"
     """
     prompt = f"""
-    Cette question est-elle liée à une base de données métier sur la vente, les clients, les produits ou les tickets ?
+    Tu dois dire si la question est liée à une base métier sur les ventes, clients, produits, tickets.
+
     Réponds uniquement par "in_scope" ou "out_of_scope".
+
+    Exemples :
+    Q: Quel est le chiffre d'affaires total ? → in_scope
+    Q: Combien de tickets ont été émis en 2023 ? → in_scope
+    Q: Quelle est la capitale de la France ? → out_of_scope
+    Q: Que vaut π au carré ? → out_of_scope
+    Q: Combien de clients fidèles en région PACA ? → in_scope
 
     Question : {question}
     """
+
     try:
         response = model_judge.generate_content(
             [Content(role="user", parts=[Part.from_text(prompt)])],
