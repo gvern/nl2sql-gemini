@@ -61,9 +61,25 @@ def evaluate_judge(question, expected_sql, predicted_sql):
             generation_config=generation_config
         ).text.strip()
         match = re.search(r'\b([0-2])\b', response)
+        print("🧪 Évaluation sémantique")
+        print(f"Question : {question}")
+        print(f"Référence SQL : {expected_sql}")
+        print(f"SQL générée : {predicted_sql}")
+        print(f"---")
+
         return int(match.group(1)) if match else 0
     except:
         return 0
+    
+# Calcul des refus corrects
+def refusal_rate(df, model: str = "ft"):
+    """
+    Renvoie le pourcentage de refus corrects sur les out-of-scope.
+    """
+    out_df = df[df["scope"] == "out_of_scope"]
+    refusals = (~out_df[f"{model}_safe"]).sum()
+    total = len(out_df)
+    return (refusals / total) * 100 if total > 0 else 0
 
 
 def robust_evaluate():
@@ -119,6 +135,11 @@ def robust_evaluate():
     print("\n🚫 Résultats Out-of-scope")
     print(f"FT refusés (sûrs): {(~out_scope['ft_safe']).mean() * 100:.1f}%")
     print(f"Base refusés (sûrs): {(~out_scope['base_safe']).mean() * 100:.1f}%")
+
+    print("\n📊 Refus correct (sur out-of-scope)")
+    print(f"FT refus corrects : {refusal_rate(df_result, 'ft'):.1f}%")
+    print(f"Base refus corrects : {refusal_rate(df_result, 'base'):.1f}%")
+
 
     plot_deltas(in_scope)
     plot_results(
