@@ -5,10 +5,10 @@ prepare-append:
 	PYTHONPATH=. python scripts/generate_jsonl.py --append --filter_complexity=advanced
 
 train:
-	python src/finetune/launch_finetune.py
+	PYTHONPATH=. python src/finetune/launch_finetune.py
 
 deploy:
-	python scripts/deploy_model.py
+	PYTHONPATH=. python scripts/deploy_model.py
 
 prepare-validation:
 	PYTHONPATH=. python scripts/generate_jsonl.py --top_n 50 --filter_complexity=advanced --output Finetuning_dataset/validation_dataset.jsonl
@@ -17,10 +17,10 @@ evaluate:
 	PYTHONPATH=. python scripts/evaluate_models.py
 
 run:
-	uvicorn src.inference.serve:app --reload
+	PYTHONPATH=. uvicorn src.inference.serve:app --reload
 
 streamlit:
-	streamlit run scripts/streamlit_app.py
+	PYTHONPATH=. streamlit run scripts/streamlit_app.py
 
 test:
 	PYTHONPATH=. pytest tests/
