@@ -79,7 +79,7 @@ def format_schema_for_prompt(schemas: Dict[str, Any]) -> str:
     return json.dumps(formatted, ensure_ascii=False, indent=2)
 
 def get_logs_dataframe(bq_logs_table_name: str) -> pd.DataFrame:
-    client = bigquery.Client()
+    client = bigquery.Client(project=PROJECT_ID)
     query = f"""
         SELECT DISTINCT original_question, query
         FROM `{bq_logs_table_name}`
