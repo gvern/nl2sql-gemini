@@ -5,6 +5,7 @@ import argparse
 from typing import List, Dict, Any
 from google.cloud import bigquery, storage
 from langchain_core.globals import set_verbose, set_debug
+import matplotlib.pyplot as plt
 from src.prompts.utils import get_prompt
 from config.settings import (
     PROJECT_ID,
@@ -104,6 +105,14 @@ def score_sql_complexity(sql: str) -> int:
     score += sql_lower.count("select") * 0.5
     score += len(set(sql_lower.split())) / 50
     return int(score)
+def plot_complexity_distribution(df):
+    plt.hist(df["complexity_score"], bins=15, color="#69b3a2")
+    plt.title("Distribution des complexités SQL")
+    plt.xlabel("Score de complexité")
+    plt.ylabel("Nombre de requêtes")
+    os.makedirs("evaluation", exist_ok=True)
+    plt.savefig("evaluation/complexity_distribution.png")
+    plt.close()
 
 def create_finetuning_jsonl(top_n: int = None, filter_complexity: str = None, append: bool = False, output_path=FINETUNE_PATH):
     schemas = get_table_schemas(PROJECT_ID, DATASET_ID, FIELDS_TO_IGNORE)
@@ -113,6 +122,7 @@ def create_finetuning_jsonl(top_n: int = None, filter_complexity: str = None, ap
 
     # Ajout du score de complexité
     logs_df["complexity_score"] = logs_df["query"].apply(score_sql_complexity)
+    plot_complexity_distribution(logs_df)
 
     if filter_complexity:
         if filter_complexity == "simple":
@@ -183,4 +193,6 @@ if __name__ == "__main__":
         append=args.append,
         output_path=args.output
     )
+
+
 
