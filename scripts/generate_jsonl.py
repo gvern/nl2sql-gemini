@@ -1,7 +1,7 @@
 import os
 import json
-import time
 import pandas as pd
+import argparse
 from typing import List, Dict, Any
 from google.cloud import bigquery, storage
 from langchain_core.globals import set_verbose, set_debug
@@ -11,18 +11,16 @@ from config.settings import (
     BQ_LOGS_TABLE,
     GCS_BUCKET_URI,
     FINETUNE_PATH,
-    TRAINING_DATA_URI,
-    VALIDATION_DATA_URI,
     FIELDS_TO_IGNORE,
     FIELDS_TO_ENHANCE,
     SYSTEM_INSTRUCTION
 )
 
-# Désactive logs LangChain
+# === Désactive logs LangChain ===
 set_verbose(False)
 set_debug(False)
 
-# === Fonctions ===
+# === Fonctions utilitaires ===
 
 def get_table_schemas(project_id, dataset_id, fields_to_ignore) -> Dict[str, Dict[str, Any]]:
     client = bigquery.Client(project=project_id)
@@ -34,7 +32,7 @@ def get_table_schemas(project_id, dataset_id, fields_to_ignore) -> Dict[str, Dic
             if field.name not in fields_to_ignore:
                 desc = field.description or ""
                 if field.name == "DATE_TICKET":
-                    desc += " (Format: JJ/MM/AAAA. Utilisez PARSE_DATE('%d/%m/%Y', DATE_TICKET) pour les opérations de date)."
+                    desc += " (Format: JJ/MM/AAAA. Utilisez PARSE_DATE('%d/%m/%Y', DATE_TICKET))."
                 fields.append({
                     "name": field.name,
                     "type": field.field_type,
@@ -103,10 +101,11 @@ def score_sql_complexity(sql: str) -> int:
     score += sql_lower.count("union") * 2
     score += sql_lower.count("case when") * 2
     score += sql_lower.count("having")
-    score += len(set(sql_lower.split())) / 50  # variété des tokens
-    return score
+    score += sql_lower.count("select") * 0.5
+    score += len(set(sql_lower.split())) / 50
+    return int(score)
 
-def create_finetuning_jsonl(top_n: int = None):
+def create_finetuning_jsonl(top_n: int = None, filter_complexity: str = None, append: bool = False):
     schemas = get_table_schemas(PROJECT_ID, DATASET_ID, FIELDS_TO_IGNORE)
     enhanced = enhance_schema_with_values(PROJECT_ID, DATASET_ID, schemas, FIELDS_TO_ENHANCE)
     schema_str = format_schema_for_prompt(enhanced)
@@ -114,6 +113,16 @@ def create_finetuning_jsonl(top_n: int = None):
 
     # Ajout du score de complexité
     logs_df["complexity_score"] = logs_df["query"].apply(score_sql_complexity)
+
+    if filter_complexity:
+        if filter_complexity == "simple":
+            logs_df = logs_df[logs_df["complexity_score"] < 5]
+        elif filter_complexity == "medium":
+            logs_df = logs_df[(logs_df["complexity_score"] >= 5) & (logs_df["complexity_score"] < 10)]
+        elif filter_complexity == "advanced":
+            logs_df = logs_df[logs_df["complexity_score"] >= 10]
+        print(f"🎯 Filtrage par complexité : {filter_complexity} ({len(logs_df)} exemples)")
+
     logs_df = logs_df.sort_values(by="complexity_score", ascending=False)
 
     if top_n:
@@ -121,7 +130,16 @@ def create_finetuning_jsonl(top_n: int = None):
         print(f"⚙️ Sélection des {top_n} requêtes les plus complexes")
 
     os.makedirs(os.path.dirname(FINETUNE_PATH), exist_ok=True)
+
+    existing = []
+    if append and os.path.exists(FINETUNE_PATH):
+        with open(FINETUNE_PATH, "r", encoding="utf-8") as f:
+            existing = f.readlines()
+        print(f"➕ Mode append : {len(existing)} exemples existants chargés")
+
     with open(FINETUNE_PATH, "w", encoding="utf-8") as f:
+        for line in existing:
+            f.write(line)
         for _, row in logs_df.iterrows():
             question, query = row["original_question"], row["query"]
             instruction = f"{SYSTEM_INSTRUCTION.strip()}\n\nSchéma de la base de données :\n{schema_str}"
@@ -150,12 +168,16 @@ def create_finetuning_jsonl(top_n: int = None):
         blob.upload_from_filename(FINETUNE_PATH)
         print(f"✅ Fichier uploadé vers GCS : gs://{bucket_name}/{blob_path}")
 
-# === Lancement ===
+# === Script d’exécution CLI ===
 if __name__ == "__main__":
-    import argparse
-
     parser = argparse.ArgumentParser()
-    parser.add_argument("--top_n", type=int, default=None, help="Nombre d'exemples complexes à inclure (optionnel)")
+    parser.add_argument("--top_n", type=int, default=None, help="Nombre d'exemples complexes à inclure")
+    parser.add_argument("--filter_complexity", type=str, choices=["simple", "medium", "advanced"], help="Filtrer par complexité SQL")
+    parser.add_argument("--append", action="store_true", help="Ajouter les exemples sans écraser le fichier existant")
     args = parser.parse_args()
 
-    create_finetuning_jsonl(top_n=args.top_n)
+    create_finetuning_jsonl(
+        top_n=args.top_n,
+        filter_complexity=args.filter_complexity,
+        append=args.append
+    )
