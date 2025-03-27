@@ -17,8 +17,10 @@ This project enables natural language to SQL query generation using a fine-tuned
 ```bash
 pip install -r requirements.txt
 gcloud auth application-default login
+```
 
 ## 📂 Structure
+```bash
 nl2sql-gemini/
 ├── config/               # Paramètres globaux du projet
 ├── docs/                 # Whitepaper & sécurité
@@ -32,12 +34,14 @@ nl2sql-gemini/
 │   ├── evaluation/      # Évaluation (SxS, exécution)
 │   └── security/        # Sécurité (validation, filtrage)
 └── tests/                # Tests automatisés
-
+```
 
 ## 🚀 Exécution rapide
+```bash
 make prepare       # Génère le fichier JSONL + upload GCS
 make train         # Lance le fine-tuning Vertex AI
 make deploy        # Déploie le modèle fine-tuné
 make evaluate      # Compare modèle de base vs fine-tuné
 make streamlit     # Lance l'app de démonstration
 make test          # Exécute les tests
+```
