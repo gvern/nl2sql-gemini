@@ -4,20 +4,24 @@ FEW_SHOT_EXAMPLES = """
 Exemple 1 :
 Question : Quel est le chiffre d'affaires total ?
 SQL :
-SELECT SUM(montant) AS total FROM tickets;
+SELECT SUM(montant) AS total FROM reine_des_maracas.ticket_caisse;
 
 Exemple 2 :
 Question : Combien de tickets ont été émis en 2023 ?
 SQL :
-SELECT COUNT(*) AS total FROM tickets
+SELECT COUNT(*) AS total FROM reine_des_maracas.ticket_caisse
 WHERE EXTRACT(YEAR FROM PARSE_DATE('%d/%m/%Y', DATE_TICKET)) = 2023;
 
 Exemple 3 :
 Question : Quel est le produit le plus vendu ?
 SQL :
-SELECT produit, COUNT(*) AS total FROM ventes
-GROUP BY produit ORDER BY total DESC LIMIT 1;
+SELECT libelle_produit, COUNT(*) AS total
+FROM reine_des_maracas.ventes
+GROUP BY libelle_produit
+ORDER BY total DESC
+LIMIT 1;
 """
+
 
 SYSTEM_INSTRUCTION_V2 = f"""
 Tu es un assistant de requête SQL spécialisé dans la base de données de l'entreprise Reine des Maracas.

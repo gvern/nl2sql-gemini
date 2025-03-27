@@ -11,7 +11,7 @@ deploy:
 	python scripts/deploy_model.py
 
 prepare-validation:
-	python scripts/generate_jsonl.py --top_n 50 --filter_complexity=advanced --output validation_dataset.jsonl
+	PYTHONPATH=. python scripts/generate_jsonl.py --top_n 50 --filter_complexity=advanced --output Finetuning_dataset/validation_dataset.jsonl
 
 evaluate:
 	PYTHONPATH=. python scripts/evaluate_models.py

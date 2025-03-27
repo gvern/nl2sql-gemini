@@ -5,6 +5,7 @@ import argparse
 from typing import List, Dict, Any
 from google.cloud import bigquery, storage
 from langchain_core.globals import set_verbose, set_debug
+from src.prompts.utils import get_prompt
 from config.settings import (
     PROJECT_ID,
     DATASET_ID,
@@ -131,17 +132,17 @@ def create_finetuning_jsonl(top_n: int = None, filter_complexity: str = None, ap
     os.makedirs(os.path.dirname(FINETUNE_PATH), exist_ok=True)
 
     existing = []
-    if append and os.path.exists(FINETUNE_PATH):
-        with open(FINETUNE_PATH, "r", encoding="utf-8") as f:
+    if append and os.path.exists(args.output):
+        with open(args.output, "r", encoding="utf-8") as f:
             existing = f.readlines()
         print(f"➕ Mode append : {len(existing)} exemples existants chargés")
 
-    with open(FINETUNE_PATH, "w", encoding="utf-8") as f:
+    with open(args.output, "w", encoding="utf-8") as f:
         for line in existing:
             f.write(line)
         for _, row in logs_df.iterrows():
             question, query = row["original_question"], row["query"]
-            instruction = f"{SYSTEM_INSTRUCTION.strip()}\n\nSchéma de la base de données :\n{schema_str}"
+            instruction = f"{get_prompt('v2').strip()}\n\n📚 Schéma de la base de données :\n{schema_str}"
             example = {
                 "systemInstruction": {
                     "role": "user",

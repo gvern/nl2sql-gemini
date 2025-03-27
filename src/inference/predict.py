@@ -10,7 +10,7 @@ from src.prompts.utils import get_prompt
 from src.logging_config import logger
 
 
-FT_PROMPT_PREFIX = get_prompt("v2")
+FT_PROMPT_PREFIX = get_prompt("v1")
 
 # Logger
 logger = logging.getLogger(__name__)
