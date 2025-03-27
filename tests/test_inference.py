@@ -18,3 +18,7 @@ def test_sanitization_valid_sql():
     sql = "SELECT * FROM my_table"
     assert sanitize_sql_output(sql) == (True, "OK")
 
+def test_get_prompt_versions():
+    from src.prompts.utils import get_prompt
+    assert "INCOMPLETE_SCHEMA" in get_prompt("v1")
+    assert "Exemple" in get_prompt("v2")

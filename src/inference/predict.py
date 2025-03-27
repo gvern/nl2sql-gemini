@@ -4,10 +4,12 @@ import logging
 from google import genai
 from google.genai import types
 from config.settings import PROJECT_NUMBER, ENDPOINT_ID, VERTEX_LOCATION
-from src.schema.format_prompt import FT_PROMPT_PREFIX
 from src.security.safety_checks import sanitize_sql_output
 from src.security.scope_filter import classify_scope
+from src.prompts.utils import get_prompt
 
+
+FT_PROMPT_PREFIX = get_prompt("v2")
 
 # Logger
 logger = logging.getLogger(__name__)

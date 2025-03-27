@@ -1,5 +1,8 @@
-prepare:
-	python scripts/generate_jsonl.py
+prepare-complex:
+	python scripts/generate_jsonl.py --top_n 100 --filter_complexity advanced
+
+prepare-append:
+	python scripts/generate_jsonl.py --append --filter_complexity=advanced
 
 train:
 	python src/finetune/launch_finetune.py

@@ -1,7 +1,10 @@
 from google.cloud import bigquery
 from config.settings import PROJECT_ID, DATASET_ID
+from functools import lru_cache
+
 
 bq_client = bigquery.Client(project=PROJECT_ID)
+@lru_cache()
 
 def extract_formatted_schema_for_prompt(project_id=PROJECT_ID, dataset_id=DATASET_ID):
     """

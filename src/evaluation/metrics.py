@@ -1,6 +1,5 @@
 import pandas as pd
 from tqdm import tqdm
-from src.schema.format_prompt import FT_PROMPT_PREFIX
 from src.inference.predict import generate_ft_sql, generate_base_sql
 from src.security.safety_checks import execute_sql, evaluate_judge
 from google.cloud import bigquery
