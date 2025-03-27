@@ -45,3 +45,9 @@ make evaluate      # Compare modèle de base vs fine-tuné
 make streamlit     # Lance l'app de démonstration
 make test          # Exécute les tests
 ```
+
+## 🔬 Evaluation (standard vs robuste)
+```bash
+- make evaluate : compare les performances des modèles sur des questions approuvées
+- make robust-eval : évalue précision, sécurité et capacité à rejeter les questions hors-scope
+```
