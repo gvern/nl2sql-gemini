@@ -49,3 +49,35 @@ def plot_deltas(df):
     os.makedirs("evaluation", exist_ok=True)
     plt.savefig("evaluation/ecarts_deltas.png")
     plt.show()
+
+def plot_scores_by_scope(df):
+    """
+    Affiche les scores d'exécution et de similarité sémantique pour les questions in-scope vs out-of-scope.
+    """
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import os
+
+    # Préparation des données
+    grouped = df.groupby("scope").agg({
+        "ft_exec": "mean",
+        "ft_semantic": "mean"
+    }).reset_index()
+    grouped["ft_exec"] *= 100
+    grouped["ft_semantic"] = grouped["ft_semantic"] / 2 * 100  # Normalisé sur 100%
+
+    # Melt pour seaborn
+    plot_df = grouped.melt(id_vars="scope", var_name="metric", value_name="score")
+
+    # Plot
+    plt.figure(figsize=(8, 6))
+    sns.barplot(data=plot_df, x="metric", y="score", hue="scope", palette="Set2")
+    plt.title("🔎 Scores du modèle fine-tuné par type de question")
+    plt.ylabel("Score (%)")
+    plt.ylim(0, 110)
+    plt.grid(True, axis='y')
+    plt.tight_layout()
+
+    os.makedirs("evaluation", exist_ok=True)
+    plt.savefig("evaluation/scores_by_scope.png")
+    plt.show()
