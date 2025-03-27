@@ -18,11 +18,9 @@ from config.settings import (
     SYSTEM_INSTRUCTION
 )
 
-
 # Désactive logs LangChain
 set_verbose(False)
 set_debug(False)
-
 
 # === Fonctions ===
 
@@ -90,11 +88,37 @@ def get_logs_dataframe(bq_logs_table_name: str) -> pd.DataFrame:
     """
     return client.query(query).result().to_dataframe()
 
-def create_finetuning_jsonl():
+def score_sql_complexity(sql: str) -> int:
+    """
+    Attribue un score de complexité à une requête SQL.
+    """
+    if not sql or not isinstance(sql, str):
+        return 0
+    sql_lower = sql.lower()
+    score = 0
+    score += sql_lower.count("join") * 3
+    score += sql_lower.count("with") * 2
+    score += sql_lower.count("group by") * 2
+    score += sql_lower.count("order by")
+    score += sql_lower.count("union") * 2
+    score += sql_lower.count("case when") * 2
+    score += sql_lower.count("having")
+    score += len(set(sql_lower.split())) / 50  # variété des tokens
+    return score
+
+def create_finetuning_jsonl(top_n: int = None):
     schemas = get_table_schemas(PROJECT_ID, DATASET_ID, FIELDS_TO_IGNORE)
     enhanced = enhance_schema_with_values(PROJECT_ID, DATASET_ID, schemas, FIELDS_TO_ENHANCE)
     schema_str = format_schema_for_prompt(enhanced)
     logs_df = get_logs_dataframe(BQ_LOGS_TABLE)
+
+    # Ajout du score de complexité
+    logs_df["complexity_score"] = logs_df["query"].apply(score_sql_complexity)
+    logs_df = logs_df.sort_values(by="complexity_score", ascending=False)
+
+    if top_n:
+        logs_df = logs_df.head(top_n)
+        print(f"⚙️ Sélection des {top_n} requêtes les plus complexes")
 
     os.makedirs(os.path.dirname(FINETUNE_PATH), exist_ok=True)
     with open(FINETUNE_PATH, "w", encoding="utf-8") as f:
@@ -113,6 +137,7 @@ def create_finetuning_jsonl():
             }
             json.dump(example, f, ensure_ascii=False)
             f.write("\n")
+
     print(f"✅ JSONL généré : {FINETUNE_PATH}")
 
     if GCS_BUCKET_URI:
@@ -127,4 +152,10 @@ def create_finetuning_jsonl():
 
 # === Lancement ===
 if __name__ == "__main__":
-    create_finetuning_jsonl()
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--top_n", type=int, default=None, help="Nombre d'exemples complexes à inclure (optionnel)")
+    args = parser.parse_args()
+
+    create_finetuning_jsonl(top_n=args.top_n)
