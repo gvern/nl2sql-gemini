@@ -5,3 +5,4 @@ __pycache__/
 evaluation/*.png
 data/processed/
 /evaluation
+/venv

@@ -27,12 +27,17 @@ def finetune_gemini_model():
         if job.state == 4:
             print("✅ Fine-tuning terminé avec succès.")
             print(f"🔧 Nom du modèle fine-tuné : {job.tuned_model_name}")
+            with open("evaluation/validation_scores.csv", "w") as f:
+                f.write(job.validation_result.content)
             return job.tuned_model_name
         else:
             raise RuntimeError(f"💥 Échec du fine-tuning. État final: {job.state}")
+        
     except Exception as e:
         print(f"❌ Erreur lors du fine-tuning : {e}")
         raise
+    
+
 
 # === Lancement ===
 if __name__ == "__main__":
