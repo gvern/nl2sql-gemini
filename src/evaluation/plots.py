@@ -22,7 +22,7 @@ def plot_results(base_exec, ft_exec, base_accuracy, ft_accuracy):
     ax.set_xticklabels(labels)
     ax.set_ylim(0, 110)
     ax.set_ylabel('Accuracy (%)')
-    ax.set_title('📊 Comparaison des modèles')
+    ax.set_title('Comparaison des modèles')
     ax.legend()
     plt.tight_layout()
     os.makedirs("evaluation", exist_ok=True)
